@@ -1,10 +1,11 @@
 "use client";
 import { motion } from "framer-motion";
 import Footer from "../components/Footer";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Carousel, Card } from "@/components/ui/apple-cards-carousel";
 import ExpandableCardStandard from "@/components/ui/expandable-card-standard";
 import ExpandableCardGrid from "@/components/ui/expandable-card-grid";
+import { VideoModal } from "../components/VideoModal";
 import { useSanityData } from "@/hooks/useSanityData";
 import {
   FEATURED_FEATURE_FILMS_QUERY,
@@ -267,6 +268,32 @@ export default function Works() {
   const { data: filmPromoDigitalFilms, loading: filmPromoDigitalFilmsLoading, error: filmPromoDigitalFilmsError } = useSanityData<FilmPromoDigital[]>(FILM_PROMO_DIGITAL_QUERY);
   const { data: upcomingReleases, loading: upcomingReleasesLoading, error: upcomingReleasesError } = useSanityData<UpcomingRelease[]>(UPCOMING_RELEASES_QUERY);
 
+  // Video modal state
+  const [selectedVideo, setSelectedVideo] = useState<{
+    url: string;
+    title: string;
+    description?: string;
+    category?: string;
+    year?: number;
+    client?: string;
+    tags?: string[];
+    thumbnail?: string;
+  } | null>(null);
+
+  // Helper function to open video modal
+  const openVideoModal = (videoData: {
+    url: string;
+    title: string;
+    description?: string;
+    category?: string;
+    year?: number;
+    client?: string;
+    tags?: string[];
+    thumbnail?: string;
+  }) => {
+    setSelectedVideo(videoData);
+  };
+
   // Helper function to create video items from any content type
   const createVideoItem = (item: { _id: string; title: string; thumbnail: { _type?: string; asset?: { _ref: string } }; videoUrl: string; description: string; _type?: string }, fallbackThumbnail?: string): VideoItem => {
     return {
@@ -307,7 +334,13 @@ export default function Works() {
               <div className="flex gap-4 mt-8">
                 <button
                   className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  onClick={() => window.open(film.videoUrl, '_blank')}
+                  onClick={() => openVideoModal({
+                    url: film.videoUrl,
+                    title: film.title,
+                    description: film.description,
+                    category: 'Feature Film',
+                    year: film.releaseDate ? new Date(film.releaseDate).getFullYear() : undefined
+                  })}
                 >
                   Watch
                 </button>
@@ -346,7 +379,12 @@ export default function Works() {
             )) || (
                 <button
                   className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  onClick={() => window.open(fallbackItem.videoUrl, '_blank')}
+                  onClick={() => openVideoModal({
+                    url: fallbackItem.videoUrl,
+                    title: fallbackItem.title,
+                    description: fallbackItem.description,
+                    category: fallbackItem.category
+                  })}
                 >
                   Watch
                 </button>
@@ -363,10 +401,11 @@ export default function Works() {
 
 
 
-  const VideoCard = ({ item, size = "large", fallbackThumbnail }: {
+  const VideoCard = ({ item, size = "large", fallbackThumbnail, onVideoClick }: {
     item: VideoItem;
     size?: "large" | "medium";
     fallbackThumbnail?: string;
+    onVideoClick?: (videoData: any) => void;
   }) => {
     const thumbnailUrl = item.thumbnail || fallbackThumbnail || 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg';
 
@@ -376,7 +415,13 @@ export default function Works() {
           }`}
         whileHover={{ scale: 1.05 }}
         transition={{ duration: 0.3 }}
-        onClick={() => item.videoUrl && window.open(item.videoUrl, '_blank')}
+        onClick={() => item.videoUrl && onVideoClick ? onVideoClick({
+          url: item.videoUrl,
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          thumbnail: item.thumbnail
+        }) : window.open(item.videoUrl, '_blank')}
       >
         <div
           className="w-full h-full rounded-lg bg-cover bg-center relative overflow-hidden bg-gray-800"
@@ -612,6 +657,7 @@ export default function Works() {
                           key={videoItem.id}
                           item={videoItem}
                           size="medium"
+                          onVideoClick={openVideoModal}
                         />
                       );
                     })}
@@ -640,6 +686,7 @@ export default function Works() {
                           key={videoItem.id}
                           item={videoItem}
                           size="medium"
+                          onVideoClick={openVideoModal}
                         />
                       );
                     })}
@@ -671,6 +718,7 @@ export default function Works() {
                           key={videoItem.id}
                           item={videoItem}
                           size="medium"
+                          onVideoClick={openVideoModal}
                         />
                       );
                     })}
@@ -721,6 +769,7 @@ export default function Works() {
                           key={videoItem.id}
                           item={videoItem}
                           size="medium"
+                          onVideoClick={openVideoModal}
                         />
                       );
                     })}
@@ -752,6 +801,7 @@ export default function Works() {
                       key={videoItem.id}
                       item={videoItem}
                       size="medium"
+                      onVideoClick={openVideoModal}
                     />
                   );
                 })}
@@ -780,6 +830,7 @@ export default function Works() {
                       key={videoItem.id}
                       item={videoItem}
                       size="medium"
+                      onVideoClick={openVideoModal}
                     />
                   );
                 })}
@@ -808,6 +859,7 @@ export default function Works() {
                       key={videoItem.id}
                       item={videoItem}
                       size="medium"
+                      onVideoClick={openVideoModal}
                     />
                   );
                 })}
@@ -869,7 +921,12 @@ export default function Works() {
                       item.title.toLowerCase().includes('showreel')
                     )?.videoUrl || 'https://www.youtube.com/watch?v=Ek4g8TUXwZ8';
 
-                  window.open(showreelUrl, '_blank');
+                  openVideoModal({
+                    url: showreelUrl,
+                    title: 'Cinematography Showreel',
+                    description: 'A compilation of my best cinematography work showcasing various projects and styles.',
+                    category: 'Showreel'
+                  });
                 }}
               >
                 Watch My Showreel
@@ -879,6 +936,21 @@ export default function Works() {
         </div>
 
       </div>
+
+      {/* Video Modal */}
+      <VideoModal
+        isOpen={!!selectedVideo}
+        onClose={() => setSelectedVideo(null)}
+        videoUrl={selectedVideo?.url || ""}
+        title={selectedVideo?.title || ""}
+        description={selectedVideo?.description}
+        category={selectedVideo?.category}
+        year={selectedVideo?.year}
+        client={selectedVideo?.client}
+        tags={selectedVideo?.tags}
+        thumbnail={selectedVideo?.thumbnail}
+      />
+
       <Footer />
     </div>
   );

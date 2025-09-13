@@ -56,6 +56,8 @@ export default function FeaturedSection() {
     url: string;
     title: string;
     description: string;
+    category?: string;
+    thumbnail?: string;
   } | null>(null);
 
   // Transform featured works data into cards format for LayoutGrid
@@ -94,6 +96,8 @@ export default function FeaturedSection() {
         url: work.videoUrl,
         title: work.title,
         description: work.description,
+        category: work.category,
+        thumbnail: work.thumbnail ? urlFor(work.thumbnail).width(800).height(450).url() : undefined,
       });
     }
   };
@@ -254,6 +258,8 @@ export default function FeaturedSection() {
         videoUrl={selectedVideo?.url || ""}
         title={selectedVideo?.title || ""}
         description={selectedVideo?.description || ""}
+        category={selectedVideo?.category}
+        thumbnail={selectedVideo?.thumbnail}
       />
     </>
   );
