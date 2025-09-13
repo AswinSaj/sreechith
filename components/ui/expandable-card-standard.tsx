@@ -23,9 +23,16 @@ interface ExpandableCardItem {
 
 interface ExpandableCardStandardProps {
   items: ExpandableCardItem[];
+  onVideoClick?: (videoData: {
+    url: string;
+    title: string;
+    description?: string;
+    category?: string;
+    thumbnail?: string;
+  }) => void;
 }
 
-export default function ExpandableCardStandard({ items }: ExpandableCardStandardProps) {
+export default function ExpandableCardStandard({ items, onVideoClick }: ExpandableCardStandardProps) {
   const [active, setActive] = useState<ExpandableCardItem | null>(null);
   const ref = useRef<HTMLDivElement>(null!);
   const id = useId();
@@ -127,15 +134,27 @@ export default function ExpandableCardStandard({ items }: ExpandableCardStandard
                   </div>
 
                   {active.videoUrl && (
-                    <motion.a
+                    <motion.button
                       layoutId={`button-${active.title}-${id}`}
-                      href={active.videoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-3 text-sm rounded-full font-bold bg-green-500 text-white hover:bg-green-600 transition-colors"
+                      onClick={() => {
+                        if (onVideoClick) {
+                          onVideoClick({
+                            url: active.videoUrl,
+                            title: active.title,
+                            description: getShortDescription(active),
+                            category: active.category?.name || 'Digital Commercial',
+                            thumbnail: active.thumbnail && active.thumbnail.asset?._ref
+                              ? urlFor(active.thumbnail).width(500).height(300).fit('crop').url()
+                              : `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`
+                          });
+                        } else {
+                          window.open(active.videoUrl, '_blank', 'noopener,noreferrer');
+                        }
+                      }}
+                      className="px-4 py-3 text-sm rounded-full font-bold bg-green-500 text-white hover:bg-green-600 transition-colors cursor-pointer"
                     >
                       Watch
-                    </motion.a>
+                    </motion.button>
                   )}
                 </div>
                 <div className="pt-4 relative px-4">

@@ -23,9 +23,16 @@ interface ExpandableCardItem {
 
 interface ExpandableCardGridProps {
   items: ExpandableCardItem[];
+  onVideoClick?: (videoData: {
+    url: string;
+    title: string;
+    description?: string;
+    category?: string;
+    thumbnail?: string;
+  }) => void;
 }
 
-export default function ExpandableCardGrid({ items }: ExpandableCardGridProps) {
+export default function ExpandableCardGrid({ items, onVideoClick }: ExpandableCardGridProps) {
   const [active, setActive] = useState<ExpandableCardItem | null>(null);
   const id = useId();
   const ref = useRef<HTMLDivElement>(null!);
@@ -127,18 +134,27 @@ export default function ExpandableCardGrid({ items }: ExpandableCardGridProps) {
                   </div>
 
                   {active.videoUrl && (
-                    <motion.a
-                      layout
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      href={active.videoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-3 text-sm rounded-full font-bold bg-green-500 text-white hover:bg-green-600 transition-colors"
+                    <motion.button
+                      layoutId={`button-${active.title}-${id}`}
+                      onClick={() => {
+                        if (onVideoClick) {
+                          onVideoClick({
+                            url: active.videoUrl,
+                            title: active.title,
+                            description: getDescriptionText(active.description),
+                            category: active.category?.name || 'Film Promo Digital',
+                            thumbnail: active.thumbnail && active.thumbnail.asset?._ref
+                              ? urlFor(active.thumbnail).width(500).height(300).fit('crop').url()
+                              : `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`
+                          });
+                        } else {
+                          window.open(active.videoUrl, '_blank', 'noopener,noreferrer');
+                        }
+                      }}
+                      className="px-4 py-3 text-sm rounded-full font-bold bg-green-500 text-white hover:bg-green-600 transition-colors cursor-pointer"
                     >
                       Watch
-                    </motion.a>
+                    </motion.button>
                   )}
                 </div>
                 <div className="pt-4 relative px-4">

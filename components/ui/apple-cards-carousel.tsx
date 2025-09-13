@@ -98,14 +98,14 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
         >
           <div
             className={cn(
-              "absolute right-0 z-[1000] h-auto w-[5%] overflow-hidden bg-gradient-to-l",
+              "absolute right-0 z-[1000] h-auto w-[5%] overflow-hidden bg-gradient-to-l"
             )}
           ></div>
 
           <div
             className={cn(
               "flex flex-row justify-start gap-4 pl-4",
-              "mx-auto max-w-7xl", // remove max-w-4xl if you want the carousel to span the full width of its container
+              "mx-auto max-w-7xl" // remove max-w-4xl if you want the carousel to span the full width of its container
             )}
           >
             {items.map((item, index) => (
@@ -166,12 +166,21 @@ export const Card = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const { onCardClose, currentIndex } = useContext(CarouselContext);
 
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    onCardClose(index);
+  };
+
   useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
         handleClose();
       }
-    }
+    };
 
     if (open) {
       document.body.style.overflow = "hidden";
@@ -181,18 +190,11 @@ export const Card = ({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open]);
+  }, [open, handleClose]);
 
-  useOutsideClick(containerRef as React.RefObject<HTMLDivElement>, () => handleClose());
-
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    onCardClose(index);
-  };
+  useOutsideClick(containerRef as React.RefObject<HTMLDivElement>, () =>
+    handleClose()
+  );
 
   return (
     <>
@@ -239,7 +241,7 @@ export const Card = ({
       <motion.button
         layoutId={layout ? `card-${card.title}` : undefined}
         onClick={handleOpen}
-        className="relative z-10 flex h-80 w-56 flex-col items-start justify-start overflow-hidden rounded-3xl bg-gray-100 md:h-[40rem] md:w-96 dark:bg-neutral-900"
+        className="relative z-10 flex h-80 w-56 flex-col items-start justify-start overflow-hidden rounded-3xl bg-gray-100 md:h-[40rem] md:w-96 dark:bg-neutral-900 cursor-pointer hover:scale-105 transition-transform duration-200"
       >
         <div className="pointer-events-none absolute inset-x-0 top-0 z-30 h-full bg-gradient-to-b from-black/50 via-transparent to-transparent" />
         <div className="relative z-40 p-8">
@@ -277,16 +279,17 @@ export const BlurImage = ({
   ...rest
 }: ImageProps) => {
   const [isLoading, setLoading] = useState(true);
-  
+
   // Filter out Next.js specific props that shouldn't be passed to regular img element
-  const { blurDataURL, priority, placeholder, quality, sizes, ...imgProps } = rest;
-  
+  const { blurDataURL, priority, placeholder, quality, sizes, ...imgProps } =
+    rest;
+
   return (
     <img
       className={cn(
         "h-full w-full transition duration-300",
         isLoading ? "blur-sm" : "blur-0",
-        className,
+        className
       )}
       onLoad={() => setLoading(false)}
       src={src as string}
